@@ -53,17 +53,36 @@ function importSVG(){
           for (var j=0; j<child.attributes.length; j++){
             var attribute = child.attributes[j];
 
-            // if (!attribute.name.startsWith("parametric:") &&   attribute.name.substr("11")  ){
+            var name = attribute.name;
 
-            var subitem = sublist.append("li").text(attribute.name + ": ");
+            // Don't display parameter if it a "parametric:" version of parameter also exists
+            if ( child.attributes.getNamedItem("parametric:" + name) ){
+              continue;
+            }
+
+            // if name starts with "parametric:", remove that
+            if (name.startsWith("parametric:")){
+              name = name.substr(11);
+            }
+
+
+            var numericFields = ["cx", "cy", "r", "width", "height", "x1", "x2", "y1", "y2", "stroke-width"]
+
+            var subitem = sublist.append("li").text(name + ": ");
 
             subitem.append("input")
             .property("value", attribute.nodeValue)
-            .datum({element: child, attribute_name: attribute.name, attribute: attribute})
+            .datum({element: child, attribute_name: name, attribute: attribute})
             .on("change", function(d){
-              d.attribute.value = this.value;
-              if (!attribute.name.startsWith("parametric:")){
-                applyParameters();
+
+              if ( this.value != (+this.value).toString() && numericFields.indexOf(d.attribute_name) != -1 ){
+                  // treat as a parametric expression
+                  d.element.setAttribute("parametric:" + d.attribute_name, this.value);
+                  getParameters(d.element.attributes);
+                  applyParameters();
+              } else {
+                  d.element.removeAttribute('parametric:' + d.attribute_name);
+                  d.element.setAttribute(d.attribute_name, this.value);
               }
             })
 
@@ -125,9 +144,12 @@ function getParameters(attributes){
           for (var term in terms){
             console.log(expression + ": " + terms[term]);
 
-            if (!expression[term]){ return; }
+            if (!terms[term] || !isNaN(terms[term]) ){ return; }
 
-            parameters[ terms[term] ] = 0;
+            if (!parameters[ terms[term] ]){
+              parameters[ terms[term] ] = 0;
+            }
+
           }
 
     }
