@@ -191,7 +191,18 @@ function setup(){
   d3.select("#svg-panel")
     .append("button")
     .text("Import SVG")
-    .on("click", importSVG)
+    .on("click", importSVG);
+
+
+  d3.select("#parameters")
+    .append("button")
+    .text("Copy Parameter values")
+    .on("click",  function() {
+    prompt(
+      'Press [CTRL + C], then [ENTER] to copy the SVG to your clipboard.',
+      JSON.stringify(parameters)
+    )})
+
 }
 
 
@@ -202,8 +213,10 @@ function setup(){
 
 <div id="code-panel">
 
-<h3>Parameters</h3>
-<div id="parameter-list"></div>
+<div id="parameters">
+  <h3>Parameters</h3>
+  <div id="parameter-list"></div>
+</div>
 
 <h3>Elements</h3>
 <div id="elements"></div>
