@@ -1,210 +1,216 @@
 <!DOCTYPE html>
 
 <head>
-<meta charset="utf-8">
+    <meta charset="utf-8">
 
 
 </head>
 
 <body onload="setup()">
-<script src="libs/parametric-svg.js" ></script>
+<script src="libs/parametric-svg.js"></script>
 
-<script src="https://d3js.org/d3.v4.min.js" ></script>
+<script src="https://d3js.org/d3.v4.min.js"></script>
 
 <script>
 
 
+    var parameters = {'x': 60, "y": 60, "d": 5};
+
+    function importSVG(svgText) {
+
+        // clear param list
+        var codePanel = d3.select("#parameter-list");
+        codePanel.node().innerHTML = "";
+        codePanel.append("ul").attr("id", "paramList");
+
+        // clear element list
+        var elements = d3.select("#elements");
+        elements.node().innerHTML = "";
+        var element_list = elements.append("ul");
+
+        parameters = {};
+
+        if (!svgText) {
+            return;
+        }
+
+        var svg = document.querySelector('svg');
+        svg.innerHTML = svgText;
+
+        var children = svg.childNodes;
+        for (var i = 0; i < children.length; i++) {
+            var child = children[i];
+            // TODO: need to igo deeper for <g>
+            // child.id
+            // child.classList
+            // child.attributes
+
+            getParameters(child.attributes);
+
+            if (child.tagName) {
+                var tag_item = element_list.append("li").text(child.tagName);
+                var sublist = tag_item.append("ul");
 
 
-var parameters = {'x': 60, "y": 60, "d": 5};
+                if (!child.attributes) {
+                    continue;
+                }
 
-function importSVG(svgText){
+                for (var j = 0; j < child.attributes.length; j++) {
+                    var attribute = child.attributes[j];
 
-  // clear param list
-  var codePanel = d3.select("#parameter-list");
-  codePanel.node().innerHTML = "";
-  codePanel.append("ul").attr("id", "paramList");
+                    var name = attribute.name;
 
-  // clear element list
-  var elements = d3.select("#elements");
-  elements.node().innerHTML = "";
-  var element_list = elements.append("ul");
+                    // Don't display parameter if it a "parametric:" version of parameter also exists
+                    if (child.attributes.getNamedItem("parametric:" + name)) {
+                        continue;
+                    }
 
-  parameters = {};
-
-  if (!svgText){ return; }
-
-  var svg = document.querySelector('svg');
-  svg.innerHTML = svgText;
-
-  var children = svg.childNodes;
-  for (var i=0; i<children.length; i++){
-    var child = children[i];
-    // TODO: need to igo deeper for <g>
-    // child.id
-    // child.classList
-    // child.attributes
-
-    getParameters(child.attributes);
-
-    if (child.tagName){
-          var tag_item = element_list.append("li").text(child.tagName);
-          var sublist = tag_item.append("ul");
+                    // if name starts with "parametric:", remove that
+                    if (name.startsWith("parametric:")) {
+                        name = name.substr(11);
+                    }
 
 
-          if (!child.attributes){ continue; }
+                    var numericFields = ["cx", "cy", "r", "width", "height", "x1", "x2", "y1", "y2", "stroke-width"]
 
-          for (var j=0; j<child.attributes.length; j++){
-            var attribute = child.attributes[j];
+                    var subitem = sublist.append("li").text(name + ": ");
 
-            var name = attribute.name;
+                    subitem.append("input")
+                        .property("value", attribute.nodeValue)
+                        .datum({element: child, attribute_name: name, attribute: attribute})
+                        .on("change", function (d) {
 
-            // Don't display parameter if it a "parametric:" version of parameter also exists
-            if ( child.attributes.getNamedItem("parametric:" + name) ){
-              continue;
+                            if (this.value != (+this.value).toString() && numericFields.indexOf(d.attribute_name) != -1) {
+                                // treat as a parametric expression
+                                d.element.setAttribute("parametric:" + d.attribute_name, this.value);
+                                getParameters(d.element.attributes);
+                                applyParameters();
+                            } else {
+                                d.element.removeAttribute('parametric:' + d.attribute_name);
+                                d.element.setAttribute(d.attribute_name, this.value);
+                            }
+                        })
+
+                }
+
+
             }
 
-            // if name starts with "parametric:", remove that
-            if (name.startsWith("parametric:")){
-              name = name.substr(11);
-            }
-
-
-            var numericFields = ["cx", "cy", "r", "width", "height", "x1", "x2", "y1", "y2", "stroke-width"]
-
-            var subitem = sublist.append("li").text(name + ": ");
-
-            subitem.append("input")
-            .property("value", attribute.nodeValue)
-            .datum({element: child, attribute_name: name, attribute: attribute})
-            .on("change", function(d){
-
-              if ( this.value != (+this.value).toString() && numericFields.indexOf(d.attribute_name) != -1 ){
-                  // treat as a parametric expression
-                  d.element.setAttribute("parametric:" + d.attribute_name, this.value);
-                  getParameters(d.element.attributes);
-                  applyParameters();
-              } else {
-                  d.element.removeAttribute('parametric:' + d.attribute_name);
-                  d.element.setAttribute(d.attribute_name, this.value);
-              }
-            })
-
-          }
+        }
 
 
     }
 
-  }
+
+    function updateParamsList() {
+
+        // add inputs for any newly-created parameters
+        for (p in parameters) {
+
+            if (!d3.select("#parameter-" + p).empty()) {
+                continue;
+            }
+
+            d3.select("#paramList")
+                .append("li")
+                .text(p + ": ")
+                .datum(p)
+                .append("input")
+                .attr("id", "parameter-" + p)
+                .property("value", parameters[p])
+                .on("change", function (d) {
+                    parameters[d] = +this.value;
+                    applyParameters();
+                });
+        }
 
 
-}
-
-
-function updateParamsList(){
-
-  // add inputs for any newly-created parameters
-  for (p in parameters){
-
-    if (!d3.select("#parameter-" + p).empty() ){
-        continue;
     }
 
-  d3.select("#paramList")
-     .append("li")
-     .text(p + ": ")
-     .datum(p)
-     .append("input")
-     .attr("id", "parameter-" + p)
-     .property("value", parameters[p])
-     .on("change", function(d){ 
-          parameters[d] = +this.value; 
-          applyParameters();
-    });
-  }
 
+    function getParameters(attributes) {
 
+        if (!attributes) {
+            return;
+        }
 
-}
+        for (var j = 0; j < attributes.length; j++) {
+            var attribute = attributes[j];
 
-
-function getParameters(attributes){
-
-  if (!attributes){ return; }
-
-  for (var j=0; j<attributes.length; j++){
-    var attribute = attributes[j];
-
-    if (attribute.name.startsWith("parametric:")){
-          var expression = attribute.nodeValue
+            if (attribute.name.startsWith("parametric:")) {
+                var expression = attribute.nodeValue
                     .replace(/\$\{/g, '')
                     .replace(/\}/g, '')
                     .replace(/\+/g, ' ')
-                     .replace(/\-/g, ' ')
-                     .replace(/\^/g, ' ')
-                     .replace(/\//g, ' ')
-                     .replace(/\*/g, ' ');
-          
-          var variables = [];
-          var terms = expression.split(" ");
+                    .replace(/\-/g, ' ')
+                    .replace(/\^/g, ' ')
+                    .replace(/\//g, ' ')
+                    .replace(/\*/g, ' ');
 
-          for (var term in terms){
-            if (!terms[term] || !isNaN(terms[term]) ){ continue; }
+                var variables = [];
+                var terms = expression.split(" ");
 
-            if (!parameters[ terms[term] ]){
-              parameters[ terms[term] ] = 0;
+                for (var term in terms) {
+                    if (!terms[term] || !isNaN(terms[term])) {
+                        continue;
+                    }
+
+                    if (!parameters[terms[term]]) {
+                        parameters[terms[term]] = 0;
+                    }
+                }
             }
-          }
+        }
+
+        updateParamsList();
     }
-  }
-
-  updateParamsList();
-}
 
 
+    function applyParameters() {
+        var parametric_svg = d3.select("parametric-svg").node();
 
-function applyParameters(){
-  var parametric_svg = d3.select("parametric-svg").node();
+        var svg = d3.select("parametric-svg").select("svg").node();
+        parametricSvg(svg, parameters);
+    }
 
-  var svg = d3.select("parametric-svg").select("svg").node();
-  parametricSvg(svg, parameters);
-}
+    function setup() {
 
-function setup(){
-   
-   applyParameters();
+        applyParameters();
 
-  d3.select("#svg-panel")
-    .append("button")
-    .text("Copy SVG")
-    .on("click",  function() {
-    prompt(
-      'Press [CTRL + C], then [ENTER] to copy the SVG to your clipboard.',
-      d3.select("svg").node().innerHTML
-    )})
-
-
-  d3.select("#svg-panel")
-    .append("button")
-    .text("Import SVG")
-    .on("click", function(){ importSVG(prompt()) });
+        d3.select("#svg-panel")
+            .append("button")
+            .text("Copy SVG")
+            .on("click", function () {
+                prompt(
+                    'Press [CTRL + C], then [ENTER] to copy the SVG to your clipboard.',
+                    d3.select("svg").node().innerHTML
+                )
+            })
 
 
-  d3.select("#parameters")
-    .append("button")
-    .text("Copy Parameter values")
-    .on("click",  function() {
-    prompt(
-      'Press [CTRL + C], then [ENTER] to copy the SVG to your clipboard.',
-      JSON.stringify(parameters)
-    )})
-
-    importSVG('<circle parametric:cx="x + d" parametric:cy=y r="40" stroke="black" stroke-width="3" fill="blue" />\n' +
-        '  <circle parametric:cx=x parametric:cy=y r="40" stroke="black" stroke-width="3" fill="green" />\n')
-
-}
+        d3.select("#svg-panel")
+            .append("button")
+            .text("Import SVG")
+            .on("click", function () {
+                importSVG(prompt())
+            });
 
 
+        d3.select("#parameters")
+            .append("button")
+            .text("Copy Parameter values")
+            .on("click", function () {
+                prompt(
+                    'Press [CTRL + C], then [ENTER] to copy the SVG to your clipboard.',
+                    JSON.stringify(parameters)
+                )
+            })
+
+        importSVG('<circle parametric:cx="x + d" parametric:cy=y r="40" stroke="black" stroke-width="3" fill="blue" />\n' +
+            '  <circle parametric:cx=x parametric:cy=y r="40" stroke="black" stroke-width="3" fill="green" />\n')
+
+    }
 
 
 </script>
@@ -212,20 +218,20 @@ function setup(){
 
 <div id="code-panel">
 
-<div id="parameters">
-  <h3>Parameters</h3>
-  <div id="parameter-list"></div>
-</div>
+    <div id="parameters">
+        <h3>Parameters</h3>
+        <div id="parameter-list"></div>
+    </div>
 
-<h3>Elements</h3>
-<div id="elements"></div>
+    <h3>Elements</h3>
+    <div id="elements"></div>
 
 
 </div>
 
 <div id="svg-panel">
     <parametric-svg>
-      <svg height="100" width="100"></svg>
+        <svg height="100" width="100"></svg>
     </parametric-svg>
 </div>
 
