@@ -18,7 +18,7 @@
 
 var parameters = {'x': 60, "y": 60, "d": 5};
 
-function importSVG(){
+function importSVG(svgText){
 
   // clear param list
   var codePanel = d3.select("#parameter-list");
@@ -32,7 +32,6 @@ function importSVG(){
 
   parameters = {};
 
-  var svgText = prompt();
   if (!svgText){ return; }
 
   var svg = document.querySelector('svg');
@@ -191,7 +190,7 @@ function setup(){
   d3.select("#svg-panel")
     .append("button")
     .text("Import SVG")
-    .on("click", importSVG);
+    .on("click", function(){ importSVG(prompt()) });
 
 
   d3.select("#parameters")
@@ -202,6 +201,9 @@ function setup(){
       'Press [CTRL + C], then [ENTER] to copy the SVG to your clipboard.',
       JSON.stringify(parameters)
     )})
+
+    importSVG('<circle parametric:cx="x + d" parametric:cy=y r="40" stroke="black" stroke-width="3" fill="blue" />\n' +
+        '  <circle parametric:cx=x parametric:cy=y r="40" stroke="black" stroke-width="3" fill="green" />\n')
 
 }
 
@@ -226,11 +228,7 @@ function setup(){
 
 <div id="svg-panel">
     <parametric-svg>
-  
-  <svg height="100" width="100">
-  <circle parametric:cx="x + d" parametric:cy=y r="40" stroke="black" stroke-width="3" fill="blue" />
-  <circle parametric:cx=x parametric:cy=y r="40" stroke="black" stroke-width="3" fill="green" />
-</svg> 
+      <svg height="100" width="100"></svg>
     </parametric-svg>
 </div>
 
