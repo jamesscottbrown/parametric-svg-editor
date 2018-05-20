@@ -20,6 +20,11 @@ var parameters = {'x': 60, "y": 60, "d": 5};
 
 function importSVG(){
 
+  // clear param list
+  var codePanel = d3.select("#parameter-list");
+  codePanel.node().innerHTML = "";
+  codePanel.append("ul").attr("id", "paramList");
+
   // clear element list
   var elements = d3.select("#elements");
   elements.node().innerHTML = "";
@@ -94,28 +99,31 @@ function importSVG(){
   }
 
 
+}
 
-  // Populate parameter list
-  var codePanel = d3.select("#parameter-list");
 
-  codePanel.node().innerHTML = "";
+function updateParamsList(){
 
-  var paramList = codePanel.append("ul");
-
+  // add inputs for any newly-created parameters
   for (p in parameters){
 
-  paramList.append("li")
-     .text(p + ": ")
+    if (!d3.select("#parameter-" + p).empty() ){
+        continue;
+    }
 
+  d3.select("#paramList")
+     .append("li")
+     .text(p + ": ")
+     .datum(p)
      .append("input")
      .attr("id", "parameter-" + p)
      .property("value", parameters[p])
-     .datum(p)
      .on("change", function(d){ 
           parameters[d] = +this.value; 
           applyParameters();
     });
   }
+
 
 
 }
@@ -144,17 +152,17 @@ function getParameters(attributes){
           for (var term in terms){
             console.log(expression + ": " + terms[term]);
 
-            if (!terms[term] || !isNaN(terms[term]) ){ return; }
+            if (!terms[term] || !isNaN(terms[term]) ){ continue; }
 
             if (!parameters[ terms[term] ]){
               parameters[ terms[term] ] = 0;
             }
 
           }
-
     }
-
   }
+
+  updateParamsList();
 }
 
 
