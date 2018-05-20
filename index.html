@@ -74,24 +74,7 @@
 
                     var numericFields = ["cx", "cy", "r", "width", "height", "x1", "x2", "y1", "y2", "stroke-width"]
 
-                    var subitem = sublist.append("li").text(name + ": ");
-
-                    subitem.append("input")
-                        .property("value", attribute.nodeValue)
-                        .datum({element: child, attribute_name: name})
-                        .on("change", function (d) {
-
-                            if (this.value != (+this.value).toString() && numericFields.indexOf(d.attribute_name) != -1) {
-                                // treat as a parametric expression
-                                d.element.setAttribute("parametric:" + d.attribute_name, this.value);
-                                getParameters(d.element.attributes);
-                                applyParameters();
-                            } else {
-                                d.element.removeAttribute('parametric:' + d.attribute_name);
-                                d.element.setAttribute(d.attribute_name, this.value);
-                            }
-                        });
-
+                    addItem(sublist, name, numericFields, attribute, child)
                 }
 
 
@@ -119,18 +102,63 @@
                             }
                         })
                 })
-
-
-
-
-
-
-
             }
-
         }
+    }
 
 
+    function addItem(sublist, name, numericFields, attribute, child) {
+
+        if (name === "d"){
+
+            sublist.append("li")
+                .text("Path:")
+                .datum({element: child, attribute_name: name}); // ?
+
+            var segmentsList = sublist.append("ul");
+
+            var segments = splitPath(attribute.nodeValue);
+
+            segmentsList.selectAll("li")
+                .data(segments)
+                .enter()
+                .append("li")
+                .append("input")
+                .property("value", function(d){ return d; })
+                .on("change", function(){
+
+                    d3.select(this.parentNode).datum(this.value);
+
+                    segmentString = "";
+                    for (var i in this.parentNode.parentNode.children){
+                        var segment = d3.select(this.parentNode.parentNode.children[i]);
+                        segmentString = segmentString + segment.data();
+                    }
+
+                    // set this as d attribute for the sublist
+                    attribute.nodeValue = segmentString;
+                })
+
+
+        } else {
+            var subitem = sublist.append("li").text(name + ": ");
+
+            subitem.append("input")
+                .property("value", attribute.nodeValue)
+                .datum({element: child, attribute_name: name})
+                .on("change", function (d) {
+
+                    if (this.value != (+this.value).toString() && numericFields.indexOf(d.attribute_name) != -1) {
+                        // treat as a parametric expression
+                        d.element.setAttribute("parametric:" + d.attribute_name, this.value);
+                        getParameters(d.element.attributes);
+                        applyParameters();
+                    } else {
+                        d.element.removeAttribute('parametric:' + d.attribute_name);
+                        d.element.setAttribute(d.attribute_name, this.value);
+                    }
+                });
+            }
     }
 
 
@@ -243,6 +271,19 @@
 
     }
 
+    function splitPath(pathString){
+        var i = 0;
+        var segments = [];
+
+        for (var k=1; k<pathString.length; k++){
+            if (pathString[k].match(/[a-z]/i)){
+                segments.push(pathString.substring(i, k).trim());
+                i = k;
+            }
+        }
+        return segments;
+    }
+
 
 </script>
 
@@ -262,7 +303,7 @@
 
 <div id="svg-panel">
     <parametric-svg>
-        <svg height="100" width="100"></svg>
+        <svg height="1000" width="1000"></svg>
     </parametric-svg>
 </div>
 
