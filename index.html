@@ -149,14 +149,11 @@ function getParameters(attributes){
           var terms = expression.split(" ");
 
           for (var term in terms){
-            console.log(expression + ": " + terms[term]);
-
             if (!terms[term] || !isNaN(terms[term]) ){ continue; }
 
             if (!parameters[ terms[term] ]){
               parameters[ terms[term] ] = 0;
             }
-
           }
     }
   }
