@@ -64,21 +64,16 @@ function addNodeToList(child){
                         name = name.substr(11);
                     }
 
-
-
-                    addItem(sublist, name, attribute, child)
+                    addItem(sublist, name, attribute.nodeValue, child)
                 }
             }
 
-
-
             tag_item.append("button")
-            //.attr("href", "")
             .text("Add attribute")
             .datum({child: child, sublist: sublist})
             .on("click", function(d){
                 var name = prompt('Name');
-                addItem(sublist, name, {nodeValue: ""}, d.child)
+                addItem(sublist, name, "", d.child)
             })
         }
 }
@@ -89,7 +84,7 @@ function addElement(){
     addNodeToList(child);
 }
 
-function addItem(sublist, name, attribute, child) {
+function addItem(sublist, name, value, child) {
 
     if (name === "d"){
 
@@ -99,7 +94,7 @@ function addItem(sublist, name, attribute, child) {
 
         var segmentsList = sublist.append("ul");
 
-        var segments = splitPath(attribute.nodeValue);
+        var segments = splitPath(value);
 
         segmentsList.selectAll("li")
             .data(segments)
@@ -111,14 +106,33 @@ function addItem(sublist, name, attribute, child) {
 
                 d3.select(this.parentNode).datum(this.value);
 
-                var segmentString = "";
-                for (var i in this.parentNode.parentNode.children){
-                    var segment = d3.select(this.parentNode.parentNode.children[i]);
-                    segmentString = segmentString + segment.data();
-                }
+                var children = Array.prototype.slice.call(this.parentNode.parentNode.children); // convert to array so can use map
+                var segmentStrings = children.map( function(n){ return d3.select(n).data() });
+                var segmentString = segmentStrings.join(" ");
+
+                segments = splitPath(segmentString);
 
                 // set this as d attribute for the sublist
-                attribute.nodeValue = segmentString;
+
+                var isParameteric = false;
+                for (var i=0; i<segments.length; i++){
+                    var stripped = segments[i].substr(1).replace(/ /g, '').replace(/,/g, '').replace(/'/g, '').replace(/-/g, '');
+
+                    if (this.value !== (+this.value).toString()){
+                        isParameteric = true;
+                        break;
+                    }
+                }
+
+                if (isParameteric){
+                    segmentStrings = segmentStrings.map(function(n){ return "'" + n + "'"});
+                    child.setAttribute("parametric:" + name, segmentStrings.join(" + "));
+                    getParameters(child.attributes);
+                    applyParameters();
+                } else {
+                    child.removeAttribute('parametric:' + name);
+                    child.setAttribute(name, segmentString);
+                }
             })
 
 
@@ -126,7 +140,7 @@ function addItem(sublist, name, attribute, child) {
         var subitem = sublist.append("li").text(name + ": ");
 
         subitem.append("input")
-            .property("value", attribute.nodeValue)
+            .property("value", value)
             .datum({element: child, attribute_name: name})
             .on("change", function (d) {
 
@@ -182,6 +196,34 @@ function updateParamsList() {
 }
 
 
+
+function processExpressionTerm(term) {
+    var expression = term
+        .replace(/\$\{/g, '')
+        .replace(/\}/g, '')
+        .replace(/\+/g, ' ')
+        .replace(/\-/g, ' ')
+        .replace(/\^/g, ' ')
+        .replace(/\//g, ' ')
+        .replace(/\*/g, ' ')
+        .replace(/,/g, ' ')
+        .replace(/'/g, ' ');
+
+    var terms = expression.split(" ");
+
+    for (var term in terms) {
+        if (!terms[term] || !isNaN(terms[term])) {
+            continue;
+        }
+
+        if (!parameters[terms[term]]) {
+            parameters[terms[term]] = 0;
+        }
+    }
+
+}
+
+
 function getParameters(attributes) {
 
     if (!attributes) {
@@ -192,26 +234,18 @@ function getParameters(attributes) {
         var attribute = attributes[j];
 
         if (attribute.name.startsWith("parametric:")) {
-            var expression = attribute.nodeValue
-                .replace(/\$\{/g, '')
-                .replace(/\}/g, '')
-                .replace(/\+/g, ' ')
-                .replace(/\-/g, ' ')
-                .replace(/\^/g, ' ')
-                .replace(/\//g, ' ')
-                .replace(/\*/g, ' ');
 
-            var terms = expression.split(" ");
+            if (attribute.name === "parametric:d"){
 
-            for (var term in terms) {
-                if (!terms[term] || !isNaN(terms[term])) {
-                    continue;
+                var segments = splitPath(attribute.nodeValue);
+                for (var i=0; i<segments.length; i++){
+                    processExpressionTerm(segments[i].substr(1).trim()); // strip off initial character
                 }
 
-                if (!parameters[terms[term]]) {
-                    parameters[terms[term]] = 0;
-                }
+            } else {
+                processExpressionTerm(attribute.nodeValue);
             }
+
         }
     }
 
