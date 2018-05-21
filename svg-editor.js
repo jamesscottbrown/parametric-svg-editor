@@ -56,7 +56,7 @@ function importSVG(svgText) {
                 }
 
 
-                var numericFields = ["cx", "cy", "r", "width", "height", "x1", "x2", "y1", "y2", "stroke-width"]
+                var numericFields = ["cx", "cy", "r", "width", "height", "x1", "x2", "y1", "y2", "stroke-width"];
 
                 addItem(sublist, name, numericFields, attribute, child)
             }
@@ -68,14 +68,14 @@ function importSVG(svgText) {
             .datum({child: child, sublist: sublist})
             .on("click", function(d){
                 var name = prompt('Name');
-                subitem = d.sublist.append("li").text(name + ": ");
+                var subitem = d.sublist.append("li").text(name + ": ");
 
                 subitem.append("input")
                     .property("value", "")
                     .datum({element: d.child, attribute_name: name})
                     .on("change", function (d) {
 
-                        if (this.value != (+this.value).toString() && numericFields.indexOf(d.attribute_name) != -1) {
+                        if (this.value !== (+this.value).toString() && numericFields.indexOf(d.attribute_name) !== -1) {
                             // treat as a parametric expression
                             d.element.setAttribute("parametric:" + d.attribute_name, this.value);
                             getParameters(d.element.attributes);
@@ -113,7 +113,7 @@ function addItem(sublist, name, numericFields, attribute, child) {
 
                 d3.select(this.parentNode).datum(this.value);
 
-                segmentString = "";
+                var segmentString = "";
                 for (var i in this.parentNode.parentNode.children){
                     var segment = d3.select(this.parentNode.parentNode.children[i]);
                     segmentString = segmentString + segment.data();
@@ -132,7 +132,7 @@ function addItem(sublist, name, numericFields, attribute, child) {
             .datum({element: child, attribute_name: name})
             .on("change", function (d) {
 
-                if (this.value != (+this.value).toString() && numericFields.indexOf(d.attribute_name) != -1) {
+                if (this.value !== (+this.value).toString() && numericFields.indexOf(d.attribute_name) !== -1) {
                     // treat as a parametric expression
                     d.element.setAttribute("parametric:" + d.attribute_name, this.value);
                     getParameters(d.element.attributes);
@@ -149,7 +149,7 @@ function addItem(sublist, name, numericFields, attribute, child) {
 function updateParamsList() {
 
     // add inputs for any newly-created parameters
-    for (p in parameters) {
+    for (var p in parameters) {
 
         if (!d3.select("#parameter-" + p).empty()) {
             continue;
@@ -191,7 +191,6 @@ function getParameters(attributes) {
                 .replace(/\//g, ' ')
                 .replace(/\*/g, ' ');
 
-            var variables = [];
             var terms = expression.split(" ");
 
             for (var term in terms) {
@@ -211,8 +210,6 @@ function getParameters(attributes) {
 
 
 function applyParameters() {
-    var parametric_svg = d3.select("parametric-svg").node();
-
     var svg = d3.select("parametric-svg").select("svg").node();
     parametricSvg(svg, parameters);
 }
@@ -229,14 +226,14 @@ function setup() {
                 'Press [CTRL + C], then [ENTER] to copy the SVG to your clipboard.',
                 d3.select("svg").node().innerHTML
             )
-        })
+        });
 
 
     d3.select("#svg-panel")
         .append("button")
         .text("Import SVG")
         .on("click", function () {
-            importSVG(prompt())
+            importSVG(prompt("Paste contents to <svg> tag"))
         });
 
 
@@ -248,7 +245,7 @@ function setup() {
                 'Press [CTRL + C], then [ENTER] to copy the SVG to your clipboard.',
                 JSON.stringify(parameters)
             )
-        })
+        });
 
     importSVG('<circle parametric:cx="x + d" parametric:cy=y r="40" stroke="black" stroke-width="3" fill="blue" />\n' +
         '  <circle parametric:cx=x parametric:cy=y r="40" stroke="black" stroke-width="3" fill="green" />\n')
