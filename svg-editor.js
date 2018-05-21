@@ -156,6 +156,18 @@ function addItem(sublist, name, attribute, child) {
                     d.element.setAttribute(d.attribute_name, this.value);
                 }
             });
+
+        subitem.append("button")
+            .datum({element: child, attribute_name: name})
+            .text("-")
+            .on("click", function(d){
+
+                d.element.removeAttribute('parametric:' + d.attribute_name);
+                d.element.removeAttribute(d.attribute_name);
+
+                subitem.node().innerHTML = "";
+                subitem.remove();
+            })
         }
 }
 
