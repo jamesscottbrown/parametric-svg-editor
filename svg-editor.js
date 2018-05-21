@@ -267,7 +267,7 @@ function splitPath(pathString){
     var segments = [];
 
     for (var k=1; k<pathString.length; k++){
-        if (pathString[k].match(/[a-z]/i)){
+        if (pathString[k].match(/[mlhvcsqa]/i) && pathString[k+1] === " "){
             segments.push(pathString.substring(i, k).trim());
             i = k;
         }
