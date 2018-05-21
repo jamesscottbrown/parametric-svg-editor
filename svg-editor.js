@@ -78,23 +78,7 @@ function addNodeToList(child){
             .datum({child: child, sublist: sublist})
             .on("click", function(d){
                 var name = prompt('Name');
-                var subitem = d.sublist.append("li").text(name + ": ");
-
-                subitem.append("input")
-                    .property("value", "")
-                    .datum({element: d.child, attribute_name: name})
-                    .on("change", function (d) {
-
-                        if (this.value !== (+this.value).toString() && numericFields.indexOf(d.attribute_name) !== -1) {
-                            // treat as a parametric expression
-                            d.element.setAttribute("parametric:" + d.attribute_name, this.value);
-                            getParameters(d.element.attributes);
-                            applyParameters();
-                        } else {
-                            d.element.removeAttribute('parametric:' + d.attribute_name);
-                            d.element.setAttribute(d.attribute_name, this.value);
-                        }
-                    })
+                addItem(sublist, name, {nodeValue: ""}, d.child)
             })
         }
 }
