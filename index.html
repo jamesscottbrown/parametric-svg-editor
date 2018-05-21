@@ -3,34 +3,45 @@
 <head>
     <meta charset="utf-8">
 
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
 </head>
 
 <body onload="setup()">
+
 <script src="libs/parametric-svg.js"></script>
-
 <script src="https://d3js.org/d3.v4.min.js"></script>
-
 <script src="svg-editor.js"></script>
 
+<div class="container">
 
-<div id="code-panel">
+          <div class="page-header">
+        <h1>Parametric SVG editor</h1>
+        <p class="lead">An editor for SVG images in which attributes can contain parameters.</p>
+      </div>
 
-    <div id="parameters">
-        <h3>Parameters</h3>
-        <div id="parameter-list"></div>
+    <div class="row">
+        <div class="col-md-4" id="code-panel">
+
+            <div id="parameters">
+                <h3>Parameters</h3>
+                <div id="parameter-list"></div>
+            </div>
+
+            <h3>Elements</h3>
+            <div id="elements"></div>
+
+
+        </div>
+
+        <div class="col-md-4" id="svg-panel">
+            <parametric-svg>
+                <svg height="1000" width="1000"></svg>
+            </parametric-svg>
+        </div>
+
     </div>
 
-    <h3>Elements</h3>
-    <div id="elements"></div>
-
-
 </div>
-
-<div id="svg-panel">
-    <parametric-svg>
-        <svg height="1000" width="1000"></svg>
-    </parametric-svg>
-</div>
-
 </body>
