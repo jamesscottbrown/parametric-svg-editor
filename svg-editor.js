@@ -1,4 +1,5 @@
 var parameters = {'x': 60, "y": 60, "d": 5};
+var numericFields = ["cx", "cy", "r", "width", "height", "x1", "x2", "y1", "y2", "stroke-width"];
 
 function importSVG(svgText) {
 
@@ -10,7 +11,7 @@ function importSVG(svgText) {
     // clear element list
     var elements = d3.select("#elements");
     elements.node().innerHTML = "";
-    var element_list = elements.append("ul");
+    elements.append("ul").attr("id", "elementList");
 
     parameters = {};
 
@@ -29,6 +30,17 @@ function importSVG(svgText) {
         // child.classList
         // child.attributes
 
+        addNodeToList(child)
+    }
+
+    elements.append("button")
+        .text("Add Element")
+        .on("click", addElement)
+
+}
+
+function addNodeToList(child){
+        element_list = d3.select("#elementList");
         getParameters(child.attributes);
 
         if (child.tagName) {
@@ -36,30 +48,28 @@ function importSVG(svgText) {
             var sublist = tag_item.append("ul");
 
 
-            if (!child.attributes) {
-                continue;
+            if (child.attributes) {
+                for (var j = 0; j < child.attributes.length; j++) {
+                    var attribute = child.attributes[j];
+
+                    var name = attribute.name;
+
+                    // Don't display parameter if it a "parametric:" version of parameter also exists
+                    if (child.attributes.getNamedItem("parametric:" + name)) {
+                        continue;
+                    }
+
+                    // if name starts with "parametric:", remove that
+                    if (name.startsWith("parametric:")) {
+                        name = name.substr(11);
+                    }
+
+
+
+                    addItem(sublist, name, attribute, child)
+                }
             }
 
-            for (var j = 0; j < child.attributes.length; j++) {
-                var attribute = child.attributes[j];
-
-                var name = attribute.name;
-
-                // Don't display parameter if it a "parametric:" version of parameter also exists
-                if (child.attributes.getNamedItem("parametric:" + name)) {
-                    continue;
-                }
-
-                // if name starts with "parametric:", remove that
-                if (name.startsWith("parametric:")) {
-                    name = name.substr(11);
-                }
-
-
-                var numericFields = ["cx", "cy", "r", "width", "height", "x1", "x2", "y1", "y2", "stroke-width"];
-
-                addItem(sublist, name, numericFields, attribute, child)
-            }
 
 
             tag_item.append("button")
@@ -87,11 +97,15 @@ function importSVG(svgText) {
                     })
             })
         }
-    }
 }
 
+function addElement(){
+    var type = prompt("Tag name");
+    var child = d3.select("svg").append(type).node();
+    addNodeToList(child);
+}
 
-function addItem(sublist, name, numericFields, attribute, child) {
+function addItem(sublist, name, attribute, child) {
 
     if (name === "d"){
 
