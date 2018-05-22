@@ -84,6 +84,37 @@ function addElement(){
     addNodeToList(child);
 }
 
+
+function updatePath(input, child){
+    d3.select(input.parentNode).datum(input.value);
+
+    var children = Array.prototype.slice.call(input.parentNode.parentNode.children); // convert to array so can use map
+    var segmentStrings = children.map( function(n){ return d3.select(n).data() });
+    var segmentString = segmentStrings.join(" ");
+
+    var segments = splitPath(segmentString);
+
+    var isParameteric = false;
+    for (var i=0; i<segments.length; i++){
+        var stripped = segments[i].substr(1).replace(/ /g, '').replace(/,/g, '').replace(/'/g, '').replace(/-/g, '');
+
+        if (this.value !== (+this.value).toString()){
+            isParameteric = true;
+            break;
+        }
+    }
+
+    if (isParameteric){
+        segmentStrings = segmentStrings.map(function(n){ return "'" + n + "'"});
+        child.setAttribute("parametric:d", segmentStrings.join(" + "));
+        getParameters(child.attributes);
+        applyParameters();
+    } else {
+        child.removeAttribute('parametric:d');
+        child.setAttribute('d', segmentString);
+    }
+}
+
 function addItem(sublist, name, value, child) {
 
     if (name === "d"){
@@ -103,36 +134,21 @@ function addItem(sublist, name, value, child) {
             .append("input")
             .property("value", function(d){ return d; })
             .on("change", function(){
+                updatePath(this, child);
+            });
 
-                d3.select(this.parentNode).datum(this.value);
+        sublist.append("button")
+            .text("+")
+            .on("click", function(){
 
-                var children = Array.prototype.slice.call(this.parentNode.parentNode.children); // convert to array so can use map
-                var segmentStrings = children.map( function(n){ return d3.select(n).data() });
-                var segmentString = segmentStrings.join(" ");
-
-                segments = splitPath(segmentString);
-
-                // set this as d attribute for the sublist
-
-                var isParameteric = false;
-                for (var i=0; i<segments.length; i++){
-                    var stripped = segments[i].substr(1).replace(/ /g, '').replace(/,/g, '').replace(/'/g, '').replace(/-/g, '');
-
-                    if (this.value !== (+this.value).toString()){
-                        isParameteric = true;
-                        break;
-                    }
-                }
-
-                if (isParameteric){
-                    segmentStrings = segmentStrings.map(function(n){ return "'" + n + "'"});
-                    child.setAttribute("parametric:" + name, segmentStrings.join(" + "));
-                    getParameters(child.attributes);
-                    applyParameters();
-                } else {
-                    child.removeAttribute('parametric:' + name);
-                    child.setAttribute(name, segmentString);
-                }
+                segmentsList
+                    .append("li")
+                    //.datum([""])
+                    .append("input")
+                    .property("value", "")
+                    .on("change", function(){
+                         updatePath(this, child);
+                    });
             })
 
 
