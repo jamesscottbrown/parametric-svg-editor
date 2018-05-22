@@ -1,5 +1,4 @@
 var parameters = {'x': 60, "y": 60, "d": 5};
-var numericFields = ["cx", "cy", "r", "width", "height", "x1", "x2", "y1", "y2", "stroke-width"];
 
 function importSVG(svgText) {
     // Load an SVg or parametric SVG from a string
@@ -121,8 +120,7 @@ function updatePath(input, child){
     }
 
     if (isParameteric){
-        segmentStrings = segmentStrings.map(function(n){ return "'" + n + "'"});
-        child.setAttribute("parametric:d", segmentStrings.join(" + "));
+        child.setAttribute("parametric:d", segmentString);
         getParameters(child.attributes);
         applyParameters();
     } else {
@@ -154,20 +152,16 @@ function updateStyle(input, child){
             val = "";
         }
 
-        if (val.indexOf("'") !== -1){
+        if (val.indexOf("{") !== -1){
             isParameteric = true;
             break;
         }
     }
 
     if (isParameteric){
-        segmentStrings = segmentStrings.map(function(n){ return "'" + n + ";'"});
-        child.setAttribute("parametric:style", segmentStrings.join(" + "));
+        child.setAttribute("parametric:style", segmentString);
 
-        // extract only what was in single quotes
-        var paramString = val.split("'").filter( function(d,i){ return i%2 == 1 }).join(" ");
-
-        getParameters([{name: "parametric:style", nodeValue: paramString}]);
+        getParameters([{name: "parametric:style", nodeValue: val}]);
         applyParameters();
     } else {
         child.removeAttribute('parametric:style');
@@ -285,7 +279,7 @@ function addItem(sublist, name, value, child) {
             .datum({element: child, attribute_name: name})
             .on("change", function (d) {
 
-                if (this.value !== (+this.value).toString() && numericFields.indexOf(d.attribute_name) !== -1) {
+                if (this.value !== (+this.value).toString()) {
                     // treat as a parametric expression
                     d.element.setAttribute("parametric:" + d.attribute_name, this.value);
                     getParameters(d.element.attributes);
@@ -328,7 +322,13 @@ function updateParamsList() {
             .attr("id", "parameter-" + p)
             .property("value", parameters[p])
             .on("change", function (d) {
-                parameters[d] = +this.value;
+
+                if (this.value === (+this.value).toString()){
+                    parameters[d] = +this.value;
+                } else {
+                    parameters[d] = this.value;
+                }
+
                 applyParameters();
             });
     }
@@ -340,7 +340,7 @@ function updateParamsList() {
 
 function processExpressionTerm(term) {
     var expression = term
-        .replace(/\$\{/g, '')
+        .replace(/\{/g, '')
         .replace(/\}/g, '')
         .replace(/\+/g, ' ')
         .replace(/\-/g, ' ')
@@ -377,16 +377,9 @@ function getParameters(attributes) {
 
         if (attribute.name.startsWith("parametric:")) {
 
-            if (attribute.name === "parametric:d"){
-
-                var segments = splitPath(attribute.nodeValue);
-                for (var i=0; i<segments.length; i++){
-                    processExpressionTerm(segments[i].substr(1).trim()); // strip off initial character
-                }
-
-            } else {
-                processExpressionTerm(attribute.nodeValue);
-            }
+            // process only the contents of {}
+            var re = /\{(.+?)\}/g;
+            attribute.nodeValue.replace(re, function(match, g1, g2) { processExpressionTerm(g1) });
 
         }
     }
@@ -398,7 +391,35 @@ function getParameters(attributes) {
 function applyParameters() {
     // Substitutes the values in parameters into the SVG
     var svg = d3.select("parametric-svg").select("svg").node();
-    parametricSvg(svg, parameters);
+    // parametricSvg(svg, parameters);
+
+    var tagNames = ["rect", "circle", "ellipse", "line", "polyline", "polygon",
+                    "text", "tspan", "tref", "textPath", "altGlyph", "altGlyphDef", "altGlyphItem", "glyphRef",
+                    "marker"];
+
+    var re = /\{(.+?)\}/g;
+
+    for (var i in tagNames){
+
+        var tags = svg.getElementsByTagName(tagNames[i]);
+
+        for (var j in tags){
+            var tag = tags[j];
+            for (var k in tag.attributes){
+                var name = tag.attributes[k].name;
+                var value = tag.attributes[k].nodeValue;
+
+                if (name && name.startsWith("parametric:")){
+
+                    name = name.substr(11);
+                    value = value.replace(re, function(match, g1, g2) { return math.eval(g1, parameters) });
+                    tag.setAttribute(name, value)
+                }
+            }
+        }
+    }
+
+
 }
 
 function setup() {
@@ -432,8 +453,8 @@ function setup() {
             )
         });
 
-    importSVG('<circle parametric:cx="x + d" parametric:cy=y r="40" stroke="black" stroke-width="3" fill="blue" />\n' +
-        '  <circle parametric:cx=x parametric:cy=y r="40" stroke="black" stroke-width="3" fill="green" />\n')
+    importSVG('<circle parametric:cx="{x + d}" parametric:cy="{y}" r="40" stroke="black" stroke-width="3" fill="blue" />\n' +
+        '  <circle parametric:cx="{x}" parametric:cy="{y}" r="40" stroke="black" stroke-width="3" fill="green" />\n')
 
     applyParameters();
 }
