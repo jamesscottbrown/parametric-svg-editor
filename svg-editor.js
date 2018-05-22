@@ -115,6 +115,44 @@ function updatePath(input, child){
     }
 }
 
+
+
+function updateStyle(input, child){
+
+    d3.select(input.parentNode).datum(input.value);
+
+    var children = Array.prototype.slice.call(input.parentNode.parentNode.children); // convert to array so can use map
+    var segmentStrings = children.map( function(n){ return d3.select(n).data() });
+    var segmentString = segmentStrings.join("; ");
+
+    var segments = segmentString.split(';');
+
+    var isParameteric = false;
+    for (var i=0; i<segments.length; i++){
+
+        [field, val] = segments[i].split(":");
+
+        if (val.indexOf("'") !== -1){
+            isParameteric = true;
+            break;
+        }
+    }
+
+    if (isParameteric){
+        segmentStrings = segmentStrings.map(function(n){ return "'" + n + ";'"});
+        child.setAttribute("parametric:style", segmentStrings.join(" + "));
+
+        // extract only what was in single quotes
+        var paramString = val.split("'").filter( function(d,i){ return i%2 == 1 }).join(" ");
+
+        getParameters([{name: "parametric:style", nodeValue: paramString}]);
+        applyParameters();
+    } else {
+        child.removeAttribute('parametric:style');
+        child.setAttribute('style', segmentString);
+    }
+}
+
 function addItem(sublist, name, value, child) {
 
     if (name === "d"){
@@ -150,6 +188,42 @@ function addItem(sublist, name, value, child) {
                          updatePath(this, child);
                     });
             })
+
+
+    } else if (name === "style") {
+
+        sublist.append("li")
+            .text("Style:")
+            .datum({element: child, attribute_name: name}); // ?
+
+        var segmentsList = sublist.append("ul");
+
+        var segments = value.split(';');
+
+        segmentsList.selectAll("li")
+            .data(segments)
+            .enter()
+            .append("li")
+            .append("input")
+            .property("value", function(d){ return d; })
+            .on("change", function(){
+                updateStyle(this, child);
+            });
+
+        sublist.append("button")
+            .text("+")
+            .on("click", function(){
+
+                segmentsList
+                    .append("li")
+                    //.datum([""])
+                    .append("input")
+                    .property("value", "")
+                    .on("change", function(){
+                         updateStyle(this, child);
+                    });
+            })
+
 
 
     } else {
