@@ -398,7 +398,7 @@ function splitPath(pathString){
 
     for (var k=1; k<pathString.length; k++){
         // Only split on command character if followed by a space (or it is a Z at end of string)
-        if (pathString[k].match(/[mlhvcsqa] /i) || pathString[k].match(/z$|z /i) ){
+        if (pathString.substr(k).match(/^[mlhvcsqa] /i) || pathString.substr(k).match(/^z$|^z /i) ){
             segments.push(pathString.substring(i, k).trim());
             i = k;
         }
