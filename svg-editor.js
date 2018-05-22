@@ -41,11 +41,26 @@ function importSVG(svgText) {
 }
 
 function addNodeToList(child){
+    // Add list tiem for a tag/element
         element_list = d3.select("#elementList");
         getParameters(child.attributes);
 
         if (child.tagName) {
             var tag_item = element_list.append("li").text(child.tagName);
+
+            tag_item.append("button")
+                .text("-")
+                .datum(child)
+                .on("click", function(d){
+
+                    child.innerHTML = "";
+                    d3.select(child).remove();
+
+                    var parentNode = this.parentNode;
+                    parentNode.innerHTML = "";
+                    d3.select(parentNode).remove();
+                });
+
             var sublist = tag_item.append("ul");
 
 
@@ -162,7 +177,8 @@ function updateStyle(input, child){
 
 
 function addItem(sublist, name, value, child) {
-// Adds bullet point for a tag/element
+// Adds bullet point for an attribute
+
 
     if (name === "d"){
 
