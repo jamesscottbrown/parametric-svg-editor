@@ -2,6 +2,7 @@ var parameters = {'x': 60, "y": 60, "d": 5};
 var numericFields = ["cx", "cy", "r", "width", "height", "x1", "x2", "y1", "y2", "stroke-width"];
 
 function importSVG(svgText) {
+    // Load an SVg or parametric SVG from a string
 
     // clear param list
     var codePanel = d3.select("#parameter-list");
@@ -315,6 +316,7 @@ function processExpressionTerm(term) {
 
 
 function getParameters(attributes) {
+    // Given a NamedNodeMap or Array of attributes for a tag, identify any parameters not recorded in the parameters array
 
     if (!attributes) {
         return;
@@ -344,13 +346,12 @@ function getParameters(attributes) {
 
 
 function applyParameters() {
+    // Substitutes the values in parameters into the SVG
     var svg = d3.select("parametric-svg").select("svg").node();
     parametricSvg(svg, parameters);
 }
 
 function setup() {
-
-    applyParameters();
 
     d3.select("#svg-panel")
         .append("button")
@@ -384,9 +385,12 @@ function setup() {
     importSVG('<circle parametric:cx="x + d" parametric:cy=y r="40" stroke="black" stroke-width="3" fill="blue" />\n' +
         '  <circle parametric:cx=x parametric:cy=y r="40" stroke="black" stroke-width="3" fill="green" />\n')
 
+    applyParameters();
 }
 
 function splitPath(pathString){
+    // Splits a SVG path d attribute into individual commands and return as an array
+
     var i = 0;
     var segments = [];
 
