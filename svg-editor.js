@@ -306,5 +306,10 @@ function splitPath(pathString){
             i = k;
         }
     }
+
+    if (i < k){
+        segments.push(pathString.substring(i).trim());
+    }
+
     return segments;
 }
