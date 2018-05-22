@@ -135,6 +135,10 @@ function updateStyle(input, child){
 
         [field, val] = segments[i].split(":");
 
+        if (!val){
+            val = "";
+        }
+
         if (val.indexOf("'") !== -1){
             isParameteric = true;
             break;
@@ -156,7 +160,9 @@ function updateStyle(input, child){
     }
 }
 
+
 function addItem(sublist, name, value, child) {
+// Adds bullet point for a tag/element
 
     if (name === "d"){
 
@@ -168,16 +174,29 @@ function addItem(sublist, name, value, child) {
 
         var segments = splitPath(value);
 
-        segmentsList.selectAll("li")
+        var segmentItems = segmentsList.selectAll("li")
             .data(segments)
             .enter()
-            .append("li")
-            .append("input")
+            .append("li");
+
+        segmentItems.append("input")
             .property("value", function(d){ return d; })
             .on("change", function(){
                 updatePath(this, child);
             });
 
+        segmentItems.append("button")
+            .text("-")
+            .on("click", function(d){
+                this.value = " : ";
+                updatePath(this, child);
+
+                var parentNode = this.parentNode;
+                parentNode.innerHTML = "";
+                d3.select(parentNode).remove();
+            });
+
+        // Button to add path segment
         sublist.append("button")
             .text("+")
             .on("click", function(){
@@ -190,7 +209,7 @@ function addItem(sublist, name, value, child) {
                     .on("change", function(){
                          updatePath(this, child);
                     });
-            })
+            });
 
 
     } else if (name === "style") {
@@ -203,15 +222,28 @@ function addItem(sublist, name, value, child) {
 
         var segments = value.split(';');
 
-        segmentsList.selectAll("li")
+        var segmentItems = segmentsList.selectAll("li")
             .data(segments)
             .enter()
-            .append("li")
-            .append("input")
+            .append("li");
+
+        segmentItems.append("input")
             .property("value", function(d){ return d; })
             .on("change", function(){
                 updateStyle(this, child);
             });
+
+        segmentItems.append("button")
+            .text("-")
+            .on("click", function(d){
+                this.value = "";
+                updateStyle(this, child);
+
+                var parentNode = this.parentNode;
+                parentNode.innerHTML = "";
+                d3.select(parentNode).remove();
+            });
+
 
         sublist.append("button")
             .text("+")
