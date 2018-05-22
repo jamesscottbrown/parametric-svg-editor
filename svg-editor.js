@@ -129,6 +129,8 @@ function updateStyle(input, child){
     var segments = segmentString.split(';');
 
     var isParameteric = false;
+
+    var field, val;
     for (var i=0; i<segments.length; i++){
 
         [field, val] = segments[i].split(":");
@@ -395,7 +397,8 @@ function splitPath(pathString){
     var segments = [];
 
     for (var k=1; k<pathString.length; k++){
-        if (pathString[k].match(/[mlhvcsqa]/i) && pathString[k+1] === " "){
+        // Only split on command character if followed by a space (or it is a Z at end of string)
+        if (pathString[k].match(/[mlhvcsqa] /i) || pathString[k].match(/z$|z /i) ){
             segments.push(pathString.substring(i, k).trim());
             i = k;
         }
