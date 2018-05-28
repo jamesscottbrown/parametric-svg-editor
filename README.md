@@ -1,6 +1,6 @@
 # Parametric SVG Editor
 
-![docs/screenshot.png](A Screenshot)
+![A screenshot](docs/screenshot.png)
 
 This is an editor for SVG images that can contain parameters.
 
@@ -14,3 +14,4 @@ If an attributes value is set to be a parametric expression, fields correpsondin
 The arithmetic operations supported are those supported by [math.js](http://mathjs.org).
 This project also uses [d3.js](https://d3js.org/).
 
+To use, clone this repository and open ``index.html`` with your web browser.
