@@ -395,7 +395,7 @@ function applyParameters() {
 
     var tagNames = ["rect", "circle", "ellipse", "line", "polyline", "polygon",
                     "text", "tspan", "tref", "textPath", "altGlyph", "altGlyphDef", "altGlyphItem", "glyphRef",
-                    "marker"];
+                    "marker", "path"];
 
     var re = /\{(.+?)\}/g;
 
