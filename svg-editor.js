@@ -189,7 +189,7 @@ function addItem(sublist, name, value, child) {
             .enter()
             .append("li");
 
-        segmentItems.append("input")
+        segmentItems.append("textarea")
             .property("value", function(d){ return d; })
             .on("change", function(){
                 updatePath(this, child);
@@ -214,7 +214,7 @@ function addItem(sublist, name, value, child) {
                 segmentsList
                     .append("li")
                     //.datum([""])
-                    .append("input")
+                    .append("textarea")
                     .property("value", "")
                     .on("change", function(){
                          updatePath(this, child);
