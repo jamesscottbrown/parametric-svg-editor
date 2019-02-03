@@ -20,9 +20,14 @@ function importSVG(svgText) {
     }
 
     var svg = document.querySelector('svg');
-    svg.innerHTML = svgText;
 
-    var children = svg.childNodes;
+    if (svgText.includes("<svg")){
+        svg.outerHTML = svgText;
+    } else {
+        svg.innerHTML = svgText;
+    }
+
+        var children = svg.childNodes;
     for (var i = 0; i < children.length; i++) {
         var child = children[i];
         // TODO: need to igo deeper for <g>
@@ -31,6 +36,21 @@ function importSVG(svgText) {
         // child.attributes
 
         addNodeToList(child)
+    }
+
+    // Load default parameter values
+    let defaultAttribute = svg.attributes["parametric:defaults"];
+    if (defaultAttribute){
+        let assignments = defaultAttribute.nodeValue.split(";");
+        let param, value;
+        for (let i in assignments){
+            [param, value] = assignments[i].split("=");
+            parameters[param] = value;
+
+            d3.select("#parameter-" + param)
+                .property("value", value);
+
+        }
     }
 
     elements.append("button")
