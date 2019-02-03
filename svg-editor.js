@@ -341,6 +341,8 @@ function updateParamsList() {
 function processExpressionTerm(term) {
     var expression = term
         .replace(/\{/g, '')
+        .replace(/\(/g, '')
+        .replace(/\)/g, '')
         .replace(/\}/g, '')
         .replace(/\+/g, ' ')
         .replace(/\-/g, ' ')
