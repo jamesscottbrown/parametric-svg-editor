@@ -21,7 +21,7 @@ function importSVG(svgText) {
 
     const svg = document.querySelector('svg');
 
-    if (svgText.includes("<svg")){
+    if (svgText.includes("<svg")) {
         svg.outerHTML = svgText;
     } else {
         svg.innerHTML = svgText;
@@ -40,10 +40,10 @@ function importSVG(svgText) {
 
     // Load default parameter values
     const defaultAttribute = svg.attributes["parametric:defaults"];
-    if (defaultAttribute){
+    if (defaultAttribute) {
         let assignments = defaultAttribute.nodeValue.split(";");
         let param, value;
-        for (let i in assignments){
+        for (let i in assignments) {
             [param, value] = assignments[i].split("=");
             parameters[param] = value;
 
@@ -59,86 +59,88 @@ function importSVG(svgText) {
 
 }
 
-function addNodeToList(child){
+function addNodeToList(child) {
     // Add list tiem for a tag/element
-        let element_list = d3.select("#elementList");
-        getParameters(child.attributes);
+    let element_list = d3.select("#elementList");
+    getParameters(child.attributes);
 
-        if (child.tagName) {
-            const tag_item = element_list.append("li").text(child.tagName);
+    if (child.tagName) {
+        const tag_item = element_list.append("li").text(child.tagName);
 
-            tag_item.append("button")
-                .text("-")
-                .datum(child)
-                .on("click", function () {
-                    child.innerHTML = "";
-                    d3.select(child).remove();
+        tag_item.append("button")
+            .text("-")
+            .datum(child)
+            .on("click", function () {
+                child.innerHTML = "";
+                d3.select(child).remove();
 
-                    const parentNode = this.parentNode;
-                    parentNode.innerHTML = "";
-                    d3.select(parentNode).remove();
-                });
+                const parentNode = this.parentNode;
+                parentNode.innerHTML = "";
+                d3.select(parentNode).remove();
+            });
 
-            const sublist = tag_item.append("ul");
+        const sublist = tag_item.append("ul");
 
 
-            if (child.attributes) {
-                for (let j = 0; j < child.attributes.length; j++) {
-                    const attribute = child.attributes[j];
+        if (child.attributes) {
+            for (let j = 0; j < child.attributes.length; j++) {
+                const attribute = child.attributes[j];
 
-                    let name = attribute.name;
+                let name = attribute.name;
 
-                    // Don't display parameter if it a "parametric:" version of parameter also exists
-                    if (child.attributes.getNamedItem("parametric:" + name)) {
-                        continue;
-                    }
-
-                    // if name starts with "parametric:", remove that
-                    if (name.startsWith("parametric:")) {
-                        name = name.substr(11);
-                    }
-
-                    addItem(sublist, name, attribute.nodeValue, child)
+                // Don't display parameter if it a "parametric:" version of parameter also exists
+                if (child.attributes.getNamedItem("parametric:" + name)) {
+                    continue;
                 }
-            }
 
-            tag_item.append("button")
+                // if name starts with "parametric:", remove that
+                if (name.startsWith("parametric:")) {
+                    name = name.substr(11);
+                }
+
+                addItem(sublist, name, attribute.nodeValue, child)
+            }
+        }
+
+        tag_item.append("button")
             .text("Add attribute")
             .datum({child: child, sublist: sublist})
-            .on("click", function(d){
+            .on("click", function (d) {
                 const name = prompt('Name');
                 addItem(sublist, name, "", d.child)
             })
-        }
+    }
 }
 
-function addElement(){
+function addElement() {
     const type = prompt("Tag name");
     const child = d3.select("svg").append(type).node();
     addNodeToList(child);
 }
 
 
-function updatePath(input, child){
+function updatePath(input, child) {
     d3.select(input.parentNode).datum(input.value);
 
     const children = Array.prototype.slice.call(input.parentNode.parentNode.children); // convert to array so can use map
-    const segmentStrings = children.map( function(n){ return d3.select(n).data() });
+    const segmentStrings = children.map(function (n) {
+        return d3.select(n).data()
+    });
     const segmentString = segmentStrings.join(" ");
 
     const segments = splitPath(segmentString);
 
     let isParameteric = false;
-    for (let i=0; i<segments.length; i++){
+    for (let i = 0; i < segments.length; i++) {
         let stripped = segments[i].substr(1).replace(/ /g, '').replace(/,/g, '').replace(/'/g, '').replace(/-/g, '');
 
-        if (this.value !== (+this.value).toString()){
+        if (this.value !== (+this.value).toString()) {
             isParameteric = true;
             break;
         }
     }
 
-    if (isParameteric){
+    if (isParameteric) {
         child.setAttribute("parametric:d", segmentString);
         getParameters(child.attributes);
         applyParameters();
@@ -149,13 +151,14 @@ function updatePath(input, child){
 }
 
 
-
-function updateStyle(input, child){
+function updateStyle(input, child) {
 
     d3.select(input.parentNode).datum(input.value);
 
     const children = Array.prototype.slice.call(input.parentNode.parentNode.children); // convert to array so can use map
-    const segmentStrings = children.map( function(n){ return d3.select(n).data() });
+    const segmentStrings = children.map(function (n) {
+        return d3.select(n).data()
+    });
     const segmentString = segmentStrings.join("; ");
 
     const segments = segmentString.split(';');
@@ -163,21 +166,21 @@ function updateStyle(input, child){
     let isParameteric = false;
 
     let field, val;
-    for (let i=0; i<segments.length; i++){
+    for (let i = 0; i < segments.length; i++) {
 
         [field, val] = segments[i].split(":");
 
-        if (!val){
+        if (!val) {
             val = "";
         }
 
-        if (val.indexOf("{") !== -1){
+        if (val.indexOf("{") !== -1) {
             isParameteric = true;
             break;
         }
     }
 
-    if (isParameteric){
+    if (isParameteric) {
         child.setAttribute("parametric:style", segmentString);
 
         getParameters([{name: "parametric:style", nodeValue: val}]);
@@ -193,7 +196,7 @@ function addItem(sublist, name, value, child) {
 // Adds bullet point for an attribute
 
 
-    if (name === "d"){
+    if (name === "d") {
 
         sublist.append("li")
             .text("Path:")
@@ -209,14 +212,16 @@ function addItem(sublist, name, value, child) {
             .append("li");
 
         segmentItems.append("textarea")
-            .property("value", function(d){ return d; })
-            .on("change", function(){
+            .property("value", function (d) {
+                return d;
+            })
+            .on("change", function () {
                 updatePath(this, child);
             });
 
         segmentItems.append("button")
             .text("-")
-            .on("click", function (){
+            .on("click", function () {
                 this.value = " : ";
                 updatePath(this, child);
 
@@ -228,15 +233,15 @@ function addItem(sublist, name, value, child) {
         // Button to add path segment
         sublist.append("button")
             .text("+")
-            .on("click", function(){
+            .on("click", function () {
 
                 segmentsList
                     .append("li")
                     //.datum([""])
                     .append("textarea")
                     .property("value", "")
-                    .on("change", function(){
-                         updatePath(this, child);
+                    .on("change", function () {
+                        updatePath(this, child);
                     });
             });
 
@@ -257,14 +262,16 @@ function addItem(sublist, name, value, child) {
             .append("li");
 
         segmentItems.append("input")
-            .property("value", function(d){ return d; })
-            .on("change", function(){
+            .property("value", function (d) {
+                return d;
+            })
+            .on("change", function () {
                 updateStyle(this, child);
             });
 
         segmentItems.append("button")
             .text("-")
-            .on("click", function (){
+            .on("click", function () {
                 this.value = "";
                 updateStyle(this, child);
 
@@ -276,18 +283,17 @@ function addItem(sublist, name, value, child) {
 
         sublist.append("button")
             .text("+")
-            .on("click", function(){
+            .on("click", function () {
 
                 segmentsList
                     .append("li")
                     //.datum([""])
                     .append("input")
                     .property("value", "")
-                    .on("change", function(){
-                         updateStyle(this, child);
+                    .on("change", function () {
+                        updateStyle(this, child);
                     });
             })
-
 
 
     } else {
@@ -312,7 +318,7 @@ function addItem(sublist, name, value, child) {
         subitem.append("button")
             .datum({element: child, attribute_name: name})
             .text("-")
-            .on("click", function(d){
+            .on("click", function (d) {
 
                 d.element.removeAttribute('parametric:' + d.attribute_name);
                 d.element.removeAttribute(d.attribute_name);
@@ -320,7 +326,7 @@ function addItem(sublist, name, value, child) {
                 subitem.node().innerHTML = "";
                 subitem.remove();
             })
-        }
+    }
 }
 
 
@@ -342,7 +348,7 @@ function updateParamsList() {
             .property("value", parameters[p])
             .on("change", function (d) {
 
-                if (this.value === (+this.value).toString()){
+                if (this.value === (+this.value).toString()) {
                     parameters[d] = +this.value;
                 } else {
                     parameters[d] = this.value;
@@ -354,7 +360,6 @@ function updateParamsList() {
 
 
 }
-
 
 
 function processExpressionTerm(term) {
@@ -400,7 +405,9 @@ function getParameters(attributes) {
         const attribute = attributes[j];
 
         if (attribute.name.startsWith("parametric:")) {
-            attribute.nodeValue.replace(re, function(match, g1, g2) { processExpressionTerm(g1) });
+            attribute.nodeValue.replace(re, function (match, g1, g2) {
+                processExpressionTerm(g1)
+            });
         }
     }
 
@@ -414,25 +421,27 @@ function applyParameters() {
     // parametricSvg(svg, parameters);
 
     const tagNames = ["rect", "circle", "ellipse", "line", "polyline", "polygon",
-                    "text", "tspan", "tref", "textPath", "altGlyph", "altGlyphDef", "altGlyphItem", "glyphRef",
-                    "marker", "path"];
+        "text", "tspan", "tref", "textPath", "altGlyph", "altGlyphDef", "altGlyphItem", "glyphRef",
+        "marker", "path"];
 
     const re = /\{(.+?)\}/g;
 
-    for (let i in tagNames){
+    for (let i in tagNames) {
 
         const tags = svg.getElementsByTagName(tagNames[i]);
 
-        for (let j in tags){
+        for (let j in tags) {
             let tag = tags[j];
-            for (let k in tag.attributes){
+            for (let k in tag.attributes) {
                 let name = tag.attributes[k].name;
                 let value = tag.attributes[k].nodeValue;
 
-                if (name && name.startsWith("parametric:")){
+                if (name && name.startsWith("parametric:")) {
 
                     name = name.substr(11);
-                    value = value.replace(re, function(match, g1, g2) { return math.eval(g1, parameters) });
+                    value = value.replace(re, function (match, g1, g2) {
+                        return math.eval(g1, parameters)
+                    });
                     tag.setAttribute(name, value)
                 }
             }
@@ -479,21 +488,21 @@ function setup() {
     applyParameters();
 }
 
-function splitPath(pathString){
+function splitPath(pathString) {
     // Splits a SVG path d attribute into individual commands and return as an array
 
     let i = 0;
     let segments = [];
 
-    for (let k=1; k<pathString.length; k++){
+    for (let k = 1; k < pathString.length; k++) {
         // Only split on command character if followed by a space (or it is a Z at end of string)
-        if (pathString.substr(k).match(/^[mlhvcsqa] /i) || pathString.substr(k).match(/^z$|^z /i) ){
+        if (pathString.substr(k).match(/^[mlhvcsqa] /i) || pathString.substr(k).match(/^z$|^z /i)) {
             segments.push(pathString.substring(i, k).trim());
             i = k;
         }
     }
 
-    if (i < k){
+    if (i < k) {
         segments.push(pathString.substring(i).trim());
     }
 
