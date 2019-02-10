@@ -35,7 +35,7 @@ function importSVG(svgText) {
     }
 
     // Load default parameter values
-    parameters = getDefaultParamValues(svg, parameters);
+    parameters = getDefaultParamValues(svg);
     for (let paramName in parameters){
         d3.select("#parameter-" + paramName)
             .property("value", parameters[paramName]);
@@ -55,9 +55,18 @@ function createSVG(svg, svgText){
     }
 }
 
-function getDefaultParamValues(svg, paramValues){
+function getDefaultParamValues(svg, parameters){
 
-    paramValues = paramValues ? paramValues : {};
+    if (!parameters){
+        parameters = {};
+
+        let children = svg.childNodes;
+        for (let i = 0; i < children.length; i++) {
+            getParameters(children[i].attributes);
+        }
+
+    }
+
 
     const defaultAttribute = svg.attributes["parametric:defaults"];
     if (defaultAttribute) {
@@ -65,14 +74,13 @@ function getDefaultParamValues(svg, paramValues){
         let param, value;
         for (let i in assignments) {
             [param, value] = assignments[i].split("=");
-            paramValues[param] = value;
+            parameters[param] = value;
 
             d3.select("#parameter-" + param)
                 .property("value", value);
-
         }
     }
-    return paramValues;
+    return parameters;
 }
 
 
