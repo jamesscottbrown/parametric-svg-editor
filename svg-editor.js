@@ -21,11 +21,7 @@ function importSVG(svgText) {
 
     const svg = document.querySelector('svg');
 
-    if (svgText.includes("<svg")) {
-        svg.outerHTML = svgText;
-    } else {
-        svg.innerHTML = svgText;
-    }
+    createSVG(svg, svgText);
 
     let children = svg.childNodes;
     for (let i = 0; i < children.length; i++) {
@@ -39,18 +35,10 @@ function importSVG(svgText) {
     }
 
     // Load default parameter values
-    const defaultAttribute = svg.attributes["parametric:defaults"];
-    if (defaultAttribute) {
-        let assignments = defaultAttribute.nodeValue.split(";");
-        let param, value;
-        for (let i in assignments) {
-            [param, value] = assignments[i].split("=");
-            parameters[param] = value;
-
-            d3.select("#parameter-" + param)
-                .property("value", value);
-
-        }
+    parameters = getDefaultParamValues(svg, parameters);
+    for (let paramName in parameters){
+        d3.select("#parameter-" + paramName)
+            .property("value", parameters[paramName]);
     }
 
     elements.append("button")
@@ -58,6 +46,35 @@ function importSVG(svgText) {
         .on("click", addElement)
 
 }
+
+function createSVG(svg, svgText){
+    if (svgText.includes("<svg")) {
+        svg.outerHTML = svgText;
+    } else {
+        svg.innerHTML = svgText;
+    }
+}
+
+function getDefaultParamValues(svg, paramValues){
+
+    paramValues = paramValues ? paramValues : {};
+
+    const defaultAttribute = svg.attributes["parametric:defaults"];
+    if (defaultAttribute) {
+        let assignments = defaultAttribute.nodeValue.split(";");
+        let param, value;
+        for (let i in assignments) {
+            [param, value] = assignments[i].split("=");
+            paramValues[param] = value;
+
+            d3.select("#parameter-" + param)
+                .property("value", value);
+
+        }
+    }
+    return paramValues;
+}
+
 
 function addNodeToList(child) {
     // Add list tiem for a tag/element
@@ -415,9 +432,11 @@ function getParameters(attributes) {
 }
 
 
-function applyParameters() {
+function applyParameters(svg, params) {
     // Substitutes the values in parameters into the SVG
-    const svg = d3.select("parametric-svg").select("svg").node();
+    svg = svg ? svg : d3.select("parametric-svg").select("svg").node();
+    params = params ? params : parameters;
+
     // parametricSvg(svg, parameters);
 
     const tagNames = ["rect", "circle", "ellipse", "line", "polyline", "polygon",
@@ -440,7 +459,7 @@ function applyParameters() {
 
                     name = name.substr(11);
                     value = value.replace(re, function (match, g1, g2) {
-                        return math.eval(g1, parameters)
+                        return math.eval(g1, params)
                     });
                     tag.setAttribute(name, value)
                 }
