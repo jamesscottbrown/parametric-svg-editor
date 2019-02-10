@@ -19,9 +19,10 @@ function importSVG(svgText) {
         return;
     }
 
-    const svg = document.querySelector('svg');
-
+    let svg = document.querySelector('svg');
     createSVG(svg, svgText);
+    svg = document.querySelector('svg'); // reference will be lost if outerHTML was changes
+
 
     let children = svg.childNodes;
     for (let i = 0; i < children.length; i++) {
@@ -55,7 +56,7 @@ function createSVG(svg, svgText){
     }
 }
 
-function getDefaultParamValues(svg, parameters){
+function getDefaultParamValues(svg){
 
     if (!parameters){
         parameters = {};
@@ -518,10 +519,10 @@ function setup() {
 function splitPath(pathString) {
     // Splits a SVG path d attribute into individual commands and return as an array
 
-    let i = 0;
+    let i = 0, k = 1;
     let segments = [];
 
-    for (let k = 1; k < pathString.length; k++) {
+    for (k = 1; k < pathString.length; k++) {
         // Only split on command character if followed by a space (or it is a Z at end of string)
         if (pathString.substr(k).match(/^[mlhvcsqa] /i) || pathString.substr(k).match(/^z$|^z /i)) {
             segments.push(pathString.substring(i, k).trim());
