@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8">
+
+    <script>
+
+        function drawLibrary() {
+
+
+            const basePath = "./sbol_glyphs/_glyphs_full/";
+
+            const filesToLoad = ["Aptamer.svg", "DNALocation.svg", "NucleicAcidOneStrand.svg", "OverhangSite5.svg",
+                "Signature.svg", "AssemblyScar.svg", "DNAStabilityElement.svg", "OmittedDetail.svg",
+                "PolyASite.svg", "Spacer.svg", "BluntRestrictionSite.svg", "EngineeredRegion.svg", "Operator.svg",
+                "Primer.svg", "StickyEndRestrictionEnzymeCleavageSite3.svg", "CDS.svg", "Insulator.svg",
+                "OriginOfReplication.svg", "Promoter.svg", "StickyEndRestrictionEnzymeCleavageSite5.svg",
+                "Composite.svg", "NoGlyph.svg", "OriginOfTransfer.svg", "RecombinationSite.svg", "Terminator.svg",
+                "DNACleavageSite.svg", "NonCodingRNA.svg", "OverhangSite3.svg", "RibosomeEntrySite.svg",
+                "Unspecified.svg"];
+
+            //filesToLoad = ["CDS.svg"];
+
+
+            for (let i = 0; i < filesToLoad.length; i++) {
+                fetch(basePath + filesToLoad[i])
+                    .then(res => res.text())
+                    .then(res => {
+
+                        let glyphName = filesToLoad[i].slice(0, filesToLoad[i].length - 4);
+                        let div = d3.select("#svgs")
+                            .append("div")
+                            .style("float", "left")
+                            .attr("id", glyphName);
+
+                        createSVG(div.append("svg").node(), res);
+                        let svgNode = div.select("svg").node();
+
+                        addNodeToList(svgNode);
+                        let params = getDefaultParamValues(svgNode);
+                        params['arrowbody_width'] = 20;
+                        applyParameters(svgNode, params);
+
+
+                        let svg = div.select("svg");
+
+                        // Can enlarge SVGs (necessary if scale parameters are increased)
+                        // svg.attr("width", 400).attr("height", 400);
+
+                        // Can modify styling:
+                        /*
+                        svg.selectAll('#baseline').style('stroke', 'red');
+
+                        svg.selectAll('#bounding-box').style('fill', 'grey');
+                        svg.selectAll('.filled-background-path').style('fill', 'grey');
+
+                        svg.selectAll('.filled-path').style('fill', 'pink').style('opacity', 0.5);
+                        svg.selectAll('.unfilled-path').style('fill', 'white').style('opacity', 0.5);
+                        */
+                    });
+            }
+        }
+
+
+    </script>
+</head>
+
+<body onload="drawLibrary()">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/4.3.0/math.min.js" type="text/javascript"></script>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="svg-editor.js"></script>
+
+<h1>Parametric SBOLv Glyphs</h1>
+
+<p>This is a demonstration of how the parametric SVG editor can be used as a library to display a set of parametric SVGs: in this case, <a href="http://sbolstandard.org/visual/glyphs/">SBOL Visual Glyphs</a>.</p>
+
+<div id="svgs" style="width: 700px">
+
+</div>
+</body>
