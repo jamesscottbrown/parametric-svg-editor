@@ -15,7 +15,6 @@ class ParametricSVG {
 
         svg = d3.select(svgParentDiv).node().lastChild;
         this.svg = svg;
-        this.svgNode = svg;
 
         this.parameters = {};
 
