@@ -133,6 +133,7 @@ class ParametricSVG {
             let param, value;
             for (let i in assignments) {
                 [param, value] = assignments[i].split("=");
+                param = param.trim();
                 this.parameters[param] = value;
 
                 d3.select("#parameter-" + param)
