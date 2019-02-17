@@ -1,7 +1,7 @@
-let parameters = {'x': 60, "y": 60, "d": 5};
+let parametricSVG = {};
 
 function importSVG(svgText) {
-    // Load an SVg or parametric SVG from a string
+    // Load an SVG or parametric SVG from a string
 
     // clear param list
     const codePanel = d3.select("#parameter-list");
@@ -13,30 +13,33 @@ function importSVG(svgText) {
     elements.node().innerHTML = "";
     elements.append("ul").attr("id", "elementList");
 
-    parameters = {};
+    let parameters = {};
 
     if (!svgText) {
         return;
     }
 
-    let svg = document.querySelector('svg');
-    createSVG(svg, svgText);
-    svg = document.querySelector('svg'); // reference will be lost if outerHTML was changes
+    let svgContainer = document.getElementById('svg-panel');
+    parametricSVG = new ParametricSVG(svgContainer, svgText);
+
+    // ?
+    //svg = document.querySelector('svg'); // reference will be lost if outerHTML was changes
 
 
-    let children = svg.childNodes;
+    let children = parametricSVG.svg.childNodes;
     for (let i = 0; i < children.length; i++) {
         const child = children[i];
-        // TODO: need to igo deeper for <g>
+        // TODO: need to go deeper for <g>
         // child.id
         // child.classList
         // child.attributes
 
-        addNodeToList(child)
+        addNodeToList(child);
+        updateParamsList();
     }
 
     // Load default parameter values
-    parameters = getDefaultParamValues(svg);
+    parameters = parametricSVG.getDefaultParamValues();
     for (let paramName in parameters){
         d3.select("#parameter-" + paramName)
             .property("value", parameters[paramName]);
@@ -45,103 +48,13 @@ function importSVG(svgText) {
     elements.append("button")
         .text("Add Element")
         .on("click", addElement)
-
-}
-
-function createSVG(svg, svgText){
-    if (svgText.includes("<svg")) {
-        svg.outerHTML = svgText;
-    } else {
-        svg.innerHTML = svgText;
-    }
-}
-
-function getDefaultParamValues(svg){
-
-    if (!parameters){
-        parameters = {};
-
-        let children = svg.childNodes;
-        for (let i = 0; i < children.length; i++) {
-            getParameters(children[i].attributes);
-        }
-
-    }
-
-
-    const defaultAttribute = svg.attributes["parametric:defaults"];
-    if (defaultAttribute) {
-        let assignments = defaultAttribute.nodeValue.split(";");
-        let param, value;
-        for (let i in assignments) {
-            [param, value] = assignments[i].split("=");
-            parameters[param] = value;
-
-            d3.select("#parameter-" + param)
-                .property("value", value);
-        }
-    }
-    return parameters;
-}
-
-
-function addNodeToList(child) {
-    // Add list tiem for a tag/element
-    let element_list = d3.select("#elementList");
-    getParameters(child.attributes);
-
-    if (child.tagName) {
-        const tag_item = element_list.append("li").text(child.tagName);
-
-        tag_item.append("button")
-            .text("-")
-            .datum(child)
-            .on("click", function () {
-                child.innerHTML = "";
-                d3.select(child).remove();
-
-                const parentNode = this.parentNode;
-                parentNode.innerHTML = "";
-                d3.select(parentNode).remove();
-            });
-
-        const sublist = tag_item.append("ul");
-
-
-        if (child.attributes) {
-            for (let j = 0; j < child.attributes.length; j++) {
-                const attribute = child.attributes[j];
-
-                let name = attribute.name;
-
-                // Don't display parameter if it a "parametric:" version of parameter also exists
-                if (child.attributes.getNamedItem("parametric:" + name)) {
-                    continue;
-                }
-
-                // if name starts with "parametric:", remove that
-                if (name.startsWith("parametric:")) {
-                    name = name.substr(11);
-                }
-
-                addItem(sublist, name, attribute.nodeValue, child)
-            }
-        }
-
-        tag_item.append("button")
-            .text("Add attribute")
-            .datum({child: child, sublist: sublist})
-            .on("click", function (d) {
-                const name = prompt('Name');
-                addItem(sublist, name, "", d.child)
-            })
-    }
 }
 
 function addElement() {
     const type = prompt("Tag name");
     const child = d3.select("svg").append(type).node();
     addNodeToList(child);
+    updateParamsList();
 }
 
 
@@ -168,8 +81,8 @@ function updatePath(input, child) {
 
     if (isParameteric) {
         child.setAttribute("parametric:d", segmentString);
-        getParameters(child.attributes);
-        applyParameters();
+        parametricSVG.getParameters(child.attributes);
+        parametricSVG.applyParameters();
     } else {
         child.removeAttribute('parametric:d');
         child.setAttribute('d', segmentString);
@@ -209,8 +122,8 @@ function updateStyle(input, child) {
     if (isParameteric) {
         child.setAttribute("parametric:style", segmentString);
 
-        getParameters([{name: "parametric:style", nodeValue: val}]);
-        applyParameters();
+        parametricSVG.getParameters([{name: "parametric:style", nodeValue: val}]);
+        parametricSVG.applyParameters();
     } else {
         child.removeAttribute('parametric:style');
         child.setAttribute('style', segmentString);
@@ -333,8 +246,8 @@ function addItem(sublist, name, value, child) {
                 if (this.value !== (+this.value).toString()) {
                     // treat as a parametric expression
                     d.element.setAttribute("parametric:" + d.attribute_name, this.value);
-                    getParameters(d.element.attributes);
-                    applyParameters();
+                    parametricSVG.getParameters(d.element.attributes);
+                    parametricSVG.applyParameters();
                 } else {
                     d.element.removeAttribute('parametric:' + d.attribute_name);
                     d.element.setAttribute(d.attribute_name, this.value);
@@ -359,7 +272,7 @@ function addItem(sublist, name, value, child) {
 function updateParamsList() {
 
     // add inputs for any newly-created parameters
-    for (let p in parameters) {
+    for (let p in parametricSVG.parameters) {
 
         if (!d3.select("#parameter-" + p).empty()) {
             continue;
@@ -371,112 +284,71 @@ function updateParamsList() {
             .datum(p)
             .append("input")
             .attr("id", "parameter-" + p)
-            .property("value", parameters[p])
+            .property("value", parametricSVG.parameters[p])
             .on("change", function (d) {
 
                 if (this.value === (+this.value).toString()) {
-                    parameters[d] = +this.value;
+                    parametricSVG.parameters[d] = +this.value;
                 } else {
-                    parameters[d] = this.value;
+                    parametricSVG.parameters[d] = this.value;
                 }
 
-                applyParameters();
+                parametricSVG.applyParameters();
             });
     }
-
-
 }
 
+function addNodeToList(child) {
+    // Add list item for a tag/element
+    let element_list = d3.select("#elementList");
+    parametricSVG.getParameters(child.attributes);
 
-function processExpressionTerm(term) {
-    const expression = term
-        .replace(/\{/g, '')
-        .replace(/\(/g, '')
-        .replace(/\)/g, '')
-        .replace(/\}/g, '')
-        .replace(/\+/g, ' ')
-        .replace(/\-/g, ' ')
-        .replace(/\^/g, ' ')
-        .replace(/\//g, ' ')
-        .replace(/\*/g, ' ')
-        .replace(/,/g, ' ')
-        .replace(/'/g, ' ');
+    if (child.tagName) {
+        const tag_item = element_list.append("li").text(child.tagName);
 
-    const terms = expression.split(" ");
+        tag_item.append("button")
+            .text("-")
+            .datum(child)
+            .on("click", function () {
+                child.innerHTML = "";
+                d3.select(child).remove();
 
-    for (let term in terms) {
-        if (!terms[term] || !isNaN(terms[term])) {
-            continue;
-        }
-
-        if (!parameters[terms[term]]) {
-            parameters[terms[term]] = 0;
-        }
-    }
-
-}
-
-
-function getParameters(attributes) {
-    // Given a NamedNodeMap or Array of attributes for a tag, identify any parameters not recorded in the parameters array
-
-    if (!attributes) {
-        return;
-    }
-
-    // process only the contents of {}
-    const re = /\{(.+?)\}/g;
-
-    for (let j = 0; j < attributes.length; j++) {
-        const attribute = attributes[j];
-
-        if (attribute.name.startsWith("parametric:")) {
-            attribute.nodeValue.replace(re, function (match, g1, g2) {
-                processExpressionTerm(g1)
+                const parentNode = this.parentNode;
+                parentNode.innerHTML = "";
+                d3.select(parentNode).remove();
             });
-        }
-    }
 
-    updateParamsList();
-}
+        const sublist = tag_item.append("ul");
 
 
-function applyParameters(svg, params) {
-    // Substitutes the values in parameters into the SVG
-    svg = svg ? svg : d3.select("parametric-svg").select("svg").node();
-    params = params ? params : parameters;
+        if (child.attributes) {
+            for (let j = 0; j < child.attributes.length; j++) {
+                const attribute = child.attributes[j];
 
-    // parametricSvg(svg, parameters);
+                let name = attribute.name;
 
-    const tagNames = ["rect", "circle", "ellipse", "line", "polyline", "polygon",
-        "text", "tspan", "tref", "textPath", "altGlyph", "altGlyphDef", "altGlyphItem", "glyphRef",
-        "marker", "path"];
+                // Don't display parameter if it a "parametric:" version of parameter also exists
+                if (child.attributes.getNamedItem("parametric:" + name)) {
+                    continue;
+                }
 
-    const re = /\{(.+?)\}/g;
-
-    for (let i in tagNames) {
-
-        const tags = svg.getElementsByTagName(tagNames[i]);
-
-        for (let j in tags) {
-            let tag = tags[j];
-            for (let k in tag.attributes) {
-                let name = tag.attributes[k].name;
-                let value = tag.attributes[k].nodeValue;
-
-                if (name && name.startsWith("parametric:")) {
-
+                // if name starts with "parametric:", remove that
+                if (name.startsWith("parametric:")) {
                     name = name.substr(11);
-                    value = value.replace(re, function (match, g1, g2) {
-                        return math.eval(g1, params)
-                    });
-                    tag.setAttribute(name, value)
                 }
+
+                addItem(sublist, name, attribute.nodeValue, child)
             }
         }
+
+        tag_item.append("button")
+            .text("Add attribute")
+            .datum({child: child, sublist: sublist})
+            .on("click", function (d) {
+                const name = prompt('Name');
+                addItem(sublist, name, "", d.child)
+            })
     }
-
-
 }
 
 function setup() {
@@ -506,14 +378,26 @@ function setup() {
         .on("click", function () {
             prompt(
                 'Press [CTRL + C], then [ENTER] to copy the SVG to your clipboard.',
-                JSON.stringify(parameters)
+                JSON.stringify(parametricSVG.parameters)
             )
         });
 
-    importSVG('<circle parametric:cx="{x + d}" parametric:cy="{y}" r="40" stroke="black" stroke-width="3" fill="blue" />\n' +
-        '  <circle parametric:cx="{x}" parametric:cy="{y}" r="40" stroke="black" stroke-width="3" fill="green" />\n');
 
-    applyParameters();
+
+    let svgString = `<svg  version="1.1"
+        xmlns="http://www.w3.org/2000/svg"
+        xmlns:parametric="https://parametric-svg.github.io/v0.2"
+        width="500"
+        height="500"
+        parametric:defaults="x=60;y=60;d=5">
+<circle parametric:cx="{x + d}" parametric:cy="{y}" r="40" stroke="black" stroke-width="3" fill="blue" />
+<circle parametric:cx="{x}" parametric:cy="{y}" r="40" stroke="black" stroke-width="3" fill="green" />
+</svg>`;
+
+    importSVG(svgString);
+
+    parametricSVG.getDefaultParamValues();
+    parametricSVG.applyParameters();
 }
 
 function splitPath(pathString) {

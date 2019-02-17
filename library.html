@@ -19,9 +19,6 @@
                 "DNACleavageSite.svg", "NonCodingRNA.svg", "OverhangSite3.svg", "RibosomeEntrySite.svg",
                 "Unspecified.svg"];
 
-            //filesToLoad = ["CDS.svg"];
-
-
             for (let i = 0; i < filesToLoad.length; i++) {
                 fetch(basePath + filesToLoad[i])
                     .then(res => res.text())
@@ -33,22 +30,21 @@
                             .style("float", "left")
                             .attr("id", glyphName);
 
-                        createSVG(div.append("svg").node(), res);
+
+                        let parametricSVG = new ParametricSVG('#' + glyphName, res);
                         let svgNode = div.select("svg").node();
 
-                        addNodeToList(svgNode);
-                        let params = getDefaultParamValues(svgNode);
+                        let params = parametricSVG.getDefaultParamValues();
 
                         // can change individual parameters like:
                         // params['arrowbody_width'] = 20;
 
-                        applyParameters(svgNode, params);
-
+                        parametricSVG.applyParameters(params);
 
                         let svg = div.select("svg");
 
                         // Can enlarge SVGs (necessary if scale parameters are increased)
-                        // svg.attr("width", 400).attr("height", 400);
+                       // svg.attr("width", 400).attr("height", 400);
 
                         // Can modify styling:
                         /*
@@ -72,7 +68,9 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/4.3.0/math.min.js" type="text/javascript"></script>
 <script src="https://d3js.org/d3.v4.min.js"></script>
+
 <script src="svg-editor.js"></script>
+<script src="parametricSVG.js"></script>
 
 <h1>Parametric SBOLv Glyphs</h1>
 
