@@ -15,3 +15,7 @@ If an attributes value is set to be a parametric expression, fields correpsondin
 
 The arithmetic operations supported are those supported by [math.js](http://mathjs.org).
 This project also uses [d3.js](https://d3js.org/).
+
+## Development
+
+To deploy to GitHub pages, run `npm run deploy`.
