@@ -1,32 +1,63 @@
+import * as math from 'mathjs';
+
 class ParametricSVG {
 
+    constructor (svgString) {
 
-    constructor (svgParentDiv, svgText) {
+        var virtualParent = document.createElement('div'); // can't set outerHTML of an element with no parent
+        var virtualSVG = document.createElement('svg');
+        virtualSVG.id = 'VIRTUAL-SVG';
 
-        let svg = d3.select(svgParentDiv)
-            .append('svg')
-            .node();
+        virtualParent.appendChild(virtualSVG);
+        //virtualSVG.innerHTML = svgString;
 
-        if (svgText.includes("<svg")) {
-            svg.outerHTML = svgText;
+        if (svgString.includes("<svg")) {
+            virtualSVG.outerHTML = svgString;
         } else {
-            svg.innerHTML = svgText;
+            virtualSVG.innerHTML = svgString;
+        }
+        virtualSVG = virtualParent.lastChild;
+
+      //  const stripWhitespace = string => string.replace(/ /g, '').replace(/\t/g, '').replace(/\n/g, '');
+
+        if (!virtualSVG ){
+            console.log("Skipping update because of error")
+            this.error = true;
+            return;
+        } else {
+            console.log("This is fine")
         }
 
-        svg = d3.select(svgParentDiv).node().lastChild;
-        this.svg = svg;
-
+        this.svg = virtualSVG;
         this.parameters = {};
+        this.defaultParameters = {};
 
-        let children = this.svg.childNodes;
+        let children = virtualSVG.childNodes;
         for (let i = 0; i < children.length; i++) {
             this.getParameters(children[i].attributes);
         }
 
+        this.getDefaultParamValues();
 
 
+        // Construct tree in JSON reflecting tree in SVG
+        this.tree = this.getTree(this.svg);
     }
 
+
+    getTree(parentNode){
+        const childrenArray = [].slice.call(parentNode.children)
+        const children = childrenArray.map(child => this.getTree(child));
+
+        return {
+            tagName: parentNode.tagName,
+            id: parentNode.id,
+            className: parentNode.className,
+            attributes: [...parentNode.attributes].map(d =>
+                ({name: d.name, value: d.value})),
+            children: children
+        };
+    }
 
      getParameters(attributes) {
         // Given a NamedNodeMap or Array of attributes for a tag, identify any parameters not recorded in the parameters array
@@ -37,6 +68,7 @@ class ParametricSVG {
 
         // process only the contents of {}
         const re = /\{(.+?)\}/g;
+
 
         for (let j = 0; j < attributes.length; j++) {
             const attribute = attributes[j];
@@ -108,12 +140,9 @@ class ParametricSVG {
 
                         name = name.substr(11);
                         value = value.replace(re, function (match, g1, g2) {
-                            return math.eval(g1, params)
+                            return math.evaluate(g1, params)
                         });
                         tag.setAttribute(name, value);
-
-                        console.log("Set " + name + " to: " + value)
-
                     }
                 }
             }
@@ -134,15 +163,18 @@ class ParametricSVG {
             for (let i in assignments) {
                 [param, value] = assignments[i].split("=");
                 param = param.trim();
-                this.parameters[param] = value;
+                this.defaultParameters[param] = value;
 
-                d3.select("#parameter-" + param)
-                    .property("value", value);
+                // TODO: replaceme
+                //d3.select("#parameter-" + param) .property("value", value);
             }
         }
 
-        return this.parameters;
+        return this.defaultParameters;
     }
 
 
 }
+
+
+export default ParametricSVG;
