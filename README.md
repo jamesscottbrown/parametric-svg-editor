@@ -2,6 +2,8 @@
 
 ![A screenshot](docs/screenshot.png)
 
+The editor is accessible online [here](https://jamesscottbrown.github.io/parametric-svg-editor/).
+
 This is an editor for SVG images that can contain parameters.
 
 It allows you to add, edit or delete elements of an SVG and their attributes.
@@ -13,5 +15,3 @@ If an attributes value is set to be a parametric expression, fields correpsondin
 
 The arithmetic operations supported are those supported by [math.js](http://mathjs.org).
 This project also uses [d3.js](https://d3js.org/).
-
-To use, clone this repository and open ``index.html`` with your web browser.
