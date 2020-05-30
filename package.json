@@ -1,5 +1,6 @@
 {
   "name": "parametric-svg-editor-react",
+  "homepage": "https://jamesscottbrown.github.io/parametric-svg-editor",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -19,7 +20,7 @@
   },
   "devDependencies": {
     "gh-pages": "^2.2.0"
-   },
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
