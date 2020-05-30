@@ -4,10 +4,9 @@ import './App.css';
 
 import ParameterList from './ParameterList';
 import ElementList from "./ElementList";
-import PreviewSVG from "./PreviewSVG";
 
 
-import ParametricSVG from './ParametricSVG';
+import {parseParametricSVG, PreviewSVG} from 'react-parametric-svg';
 
 import { UnControlled as CodeMirror } from 'react-codemirror2';
 
@@ -69,14 +68,11 @@ function App() {
 
 
     const applySVGString = (newSVGString) => {
-        let psvg = new ParametricSVG(newSVGString);
+        const {parameters, defaultParameters, tree} = parseParametricSVG(newSVGString);
 
-        if (!psvg.error){
-            setParams({...psvg.params, ...psvg.defaultParameters}); // apply defaults where they were defined
-            setDefaultParams(psvg.defaultParameters);
-            setTree(psvg.tree);
-        }
-
+        setParams({...parameters, ...defaultParameters}); // apply defaults where they were defined
+        setDefaultParams(defaultParameters);
+        setTree(tree);
     };
 
     if (!params){
