@@ -1,25 +1,25 @@
 {
   "files": {
-    "main.css": "/parametric-svg-editor/static/css/main.f8acc1d7.chunk.css",
-    "main.js": "/parametric-svg-editor/static/js/main.311e5d17.chunk.js",
-    "main.js.map": "/parametric-svg-editor/static/js/main.311e5d17.chunk.js.map",
-    "runtime-main.js": "/parametric-svg-editor/static/js/runtime-main.aec70bd7.js",
-    "runtime-main.js.map": "/parametric-svg-editor/static/js/runtime-main.aec70bd7.js.map",
-    "static/css/2.cf67cc5a.chunk.css": "/parametric-svg-editor/static/css/2.cf67cc5a.chunk.css",
-    "static/js/2.bd4206d0.chunk.js": "/parametric-svg-editor/static/js/2.bd4206d0.chunk.js",
-    "static/js/2.bd4206d0.chunk.js.map": "/parametric-svg-editor/static/js/2.bd4206d0.chunk.js.map",
-    "index.html": "/parametric-svg-editor/index.html",
-    "precache-manifest.2a726a7f74dec21937208c9cd718857f.js": "/parametric-svg-editor/precache-manifest.2a726a7f74dec21937208c9cd718857f.js",
-    "service-worker.js": "/parametric-svg-editor/service-worker.js",
-    "static/css/2.cf67cc5a.chunk.css.map": "/parametric-svg-editor/static/css/2.cf67cc5a.chunk.css.map",
-    "static/css/main.f8acc1d7.chunk.css.map": "/parametric-svg-editor/static/css/main.f8acc1d7.chunk.css.map",
-    "static/js/2.bd4206d0.chunk.js.LICENSE.txt": "/parametric-svg-editor/static/js/2.bd4206d0.chunk.js.LICENSE.txt"
+    "main.css": "/static/css/main.f8acc1d7.chunk.css",
+    "main.js": "/static/js/main.c1ee9f5f.chunk.js",
+    "main.js.map": "/static/js/main.c1ee9f5f.chunk.js.map",
+    "runtime-main.js": "/static/js/runtime-main.080b6512.js",
+    "runtime-main.js.map": "/static/js/runtime-main.080b6512.js.map",
+    "static/css/2.cbb6c2b0.chunk.css": "/static/css/2.cbb6c2b0.chunk.css",
+    "static/js/2.a8aad66b.chunk.js": "/static/js/2.a8aad66b.chunk.js",
+    "static/js/2.a8aad66b.chunk.js.map": "/static/js/2.a8aad66b.chunk.js.map",
+    "index.html": "/index.html",
+    "precache-manifest.ec59311f485fd09a585c262f2561f06e.js": "/precache-manifest.ec59311f485fd09a585c262f2561f06e.js",
+    "service-worker.js": "/service-worker.js",
+    "static/css/2.cbb6c2b0.chunk.css.map": "/static/css/2.cbb6c2b0.chunk.css.map",
+    "static/css/main.f8acc1d7.chunk.css.map": "/static/css/main.f8acc1d7.chunk.css.map",
+    "static/js/2.a8aad66b.chunk.js.LICENSE.txt": "/static/js/2.a8aad66b.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
-    "static/js/runtime-main.aec70bd7.js",
-    "static/css/2.cf67cc5a.chunk.css",
-    "static/js/2.bd4206d0.chunk.js",
+    "static/js/runtime-main.080b6512.js",
+    "static/css/2.cbb6c2b0.chunk.css",
+    "static/js/2.a8aad66b.chunk.js",
     "static/css/main.f8acc1d7.chunk.css",
-    "static/js/main.311e5d17.chunk.js"
+    "static/js/main.c1ee9f5f.chunk.js"
   ]
 }
